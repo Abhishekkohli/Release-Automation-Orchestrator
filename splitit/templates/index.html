@@ -4,263 +4,390 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Splitit — Share expenses, settle up</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --bg: #0f172a;
-      --bg-soft: #1e293b;
-      --card: #ffffff;
+      --brand: #14b8a6;
+      --brand-600: #0d9488;
+      --brand-700: #0f766e;
+      --brand-50: #f0fdfa;
       --ink: #0f172a;
       --muted: #64748b;
-      --line: #e2e8f0;
-      --brand: #14b8a6;
-      --brand-dark: #0d9488;
+      --line: #e6eaf0;
+      --bg: #f1f5f9;
+      --card: #ffffff;
+      --sidebar: #0b1220;
+      --sidebar-ink: #94a3b8;
       --danger: #ef4444;
       --ok: #16a34a;
-      --radius: 14px;
-      --shadow: 0 10px 30px rgba(2, 8, 23, 0.10);
+      --amber: #f59e0b;
+      --radius: 16px;
+      --shadow-sm: 0 1px 2px rgba(15,23,42,.06), 0 1px 3px rgba(15,23,42,.04);
+      --shadow: 0 10px 30px rgba(2,8,23,.08);
+      --shadow-lg: 0 24px 60px rgba(2,8,23,.18);
     }
     * { box-sizing: border-box; }
+    html, body { height: 100%; }
     body {
       margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       color: var(--ink);
-      background: linear-gradient(160deg, #0f172a 0%, #134e4a 100%);
-      min-height: 100vh;
+      background: var(--bg);
       -webkit-font-smoothing: antialiased;
     }
-    header.topbar {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 16px 22px; color: #e2e8f0;
-      max-width: 860px; margin: 0 auto;
-    }
-    .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 20px; letter-spacing: -0.02em; }
-    .brand .dot { width: 26px; height: 26px; border-radius: 8px; background: var(--brand); display: grid; place-items: center; color: #042f2e; font-weight: 800; }
-    .who { font-size: 14px; color: #99f6e4; display: flex; align-items: center; gap: 12px; }
-    .who button { background: transparent; border: 1px solid #334155; color: #cbd5e1; padding: 6px 12px; border-radius: 8px; cursor: pointer; font-size: 13px; }
-    .who button:hover { border-color: var(--brand); color: #fff; }
+    .hidden { display: none !important; }
+    a { color: var(--brand-700); }
+    .brand-mark { display: inline-grid; place-items: center; width: 34px; height: 34px; border-radius: 10px;
+      background: linear-gradient(135deg, var(--brand) 0%, #2dd4bf 100%); color: #04201d; font-weight: 800; font-size: 18px; }
 
-    main { max-width: 860px; margin: 0 auto; padding: 8px 18px 60px; }
-    .hero { color: #e2e8f0; text-align: center; margin: 18px 0 26px; }
-    .hero h1 { font-size: 30px; margin: 0 0 6px; letter-spacing: -0.03em; }
-    .hero p { margin: 0; color: #94a3b8; font-size: 15px; }
-
-    .card {
-      background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow);
-      padding: 22px; margin-bottom: 18px;
+    /* ---------- Inputs / buttons ---------- */
+    label { display: block; font-size: 13px; font-weight: 600; color: #334155; margin: 0 0 6px; }
+    .field { margin-bottom: 14px; }
+    input, select {
+      width: 100%; padding: 11px 13px; border: 1px solid var(--line); border-radius: 11px;
+      font-size: 14px; font-family: inherit; background: #fff; color: var(--ink); outline: none;
+      transition: border-color .15s, box-shadow .15s;
     }
-    .card h2 { margin: 0 0 4px; font-size: 17px; letter-spacing: -0.01em; }
+    input:focus, select:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(20,184,166,.15); }
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .checkbox { display: flex; align-items: center; gap: 9px; }
+    .checkbox input { width: 17px; height: 17px; accent-color: var(--brand); }
+    .checkbox label { margin: 0; font-weight: 500; color: var(--ink); }
+
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: 100%;
+      padding: 12px 16px; border: none; border-radius: 11px; background: var(--brand); color: #04201d;
+      font-weight: 700; font-size: 14px; font-family: inherit; cursor: pointer; transition: background .15s, transform .04s, box-shadow .15s; }
+    .btn:hover { background: var(--brand-600); color: #fff; box-shadow: 0 8px 20px rgba(13,148,136,.25); }
+    .btn:active { transform: translateY(1px); }
+    .btn.secondary { background: #eef2f7; color: var(--ink); }
+    .btn.secondary:hover { background: #e2e8f0; color: var(--ink); box-shadow: none; }
+    .btn.ghost { width: auto; background: transparent; border: 1px solid var(--line); color: #334155; padding: 9px 13px; font-size: 13px; }
+    .btn.ghost:hover { border-color: var(--brand); background: var(--brand-50); color: var(--brand-700); box-shadow: none; }
+    .btn.sm { width: auto; padding: 8px 12px; font-size: 13px; }
+
+    /* ---------- Auth screen ---------- */
+    .auth-screen { min-height: 100vh; display: grid; grid-template-columns: 1.05fr .95fr; }
+    .auth-hero {
+      position: relative; overflow: hidden; padding: 48px; color: #ecfeff;
+      background: radial-gradient(1200px 600px at 0% 0%, #0f766e 0%, transparent 55%), linear-gradient(160deg, #0b1220 0%, #0f3b39 100%);
+      display: flex; flex-direction: column; justify-content: space-between;
+    }
+    .auth-hero .logo { display: flex; align-items: center; gap: 12px; font-weight: 800; font-size: 22px; letter-spacing: -.02em; }
+    .auth-hero h1 { font-size: 40px; line-height: 1.08; letter-spacing: -.03em; margin: 0 0 16px; max-width: 12ch; }
+    .auth-hero p { color: #99f6e4; font-size: 16px; max-width: 38ch; margin: 0; }
+    .auth-hero .feat { display: flex; flex-direction: column; gap: 14px; margin-top: 28px; }
+    .auth-hero .feat div { display: flex; align-items: center; gap: 12px; color: #cffafe; font-size: 14px; }
+    .auth-hero .feat .ic { width: 30px; height: 30px; border-radius: 8px; background: rgba(45,212,191,.16); display: grid; place-items: center; color: #5eead4; }
+    .auth-hero .orb { position: absolute; border-radius: 50%; filter: blur(8px); opacity: .35; }
+    .auth-hero .orb.a { width: 240px; height: 240px; background: #2dd4bf; right: -60px; top: 30px; }
+    .auth-hero .orb.b { width: 180px; height: 180px; background: #0ea5e9; right: 120px; bottom: -40px; opacity: .25; }
+
+    .auth-panel { display: grid; place-items: center; padding: 32px; }
+    .auth-card { width: 100%; max-width: 380px; }
+    .auth-card .head { margin-bottom: 22px; }
+    .auth-card h2 { margin: 0 0 4px; font-size: 24px; letter-spacing: -.02em; }
+    .auth-card .head p { margin: 0; color: var(--muted); font-size: 14px; }
+    .tabs { display: flex; gap: 6px; background: #f1f5f9; padding: 5px; border-radius: 12px; margin-bottom: 20px; }
+    .tabs button { flex: 1; padding: 9px; border: none; background: transparent; border-radius: 9px; cursor: pointer;
+      font-weight: 600; font-size: 14px; color: var(--muted); font-family: inherit; transition: all .15s; }
+    .tabs button.active { background: #fff; color: var(--ink); box-shadow: var(--shadow-sm); }
+
+    /* ---------- App shell ---------- */
+    .app-shell { display: grid; grid-template-columns: 248px 1fr; min-height: 100vh; }
+    .sidebar { background: var(--sidebar); color: var(--sidebar-ink); padding: 22px 16px; display: flex; flex-direction: column; gap: 6px; position: sticky; top: 0; height: 100vh; }
+    .sidebar .logo { display: flex; align-items: center; gap: 11px; color: #fff; font-weight: 800; font-size: 19px; letter-spacing: -.02em; padding: 4px 8px 18px; }
+    .nav-item { display: flex; align-items: center; gap: 12px; padding: 11px 12px; border-radius: 11px; cursor: pointer;
+      color: var(--sidebar-ink); font-weight: 600; font-size: 14px; border: none; background: transparent; width: 100%; text-align: left; font-family: inherit; transition: all .14s; }
+    .nav-item:hover { background: rgba(148,163,184,.10); color: #e2e8f0; }
+    .nav-item.active { background: linear-gradient(135deg, rgba(20,184,166,.22), rgba(20,184,166,.10)); color: #5eead4; }
+    .nav-item svg { width: 19px; height: 19px; flex: 0 0 auto; }
+    .sidebar .spacer { flex: 1; }
+    .sidebar .side-foot { font-size: 12px; color: #475569; padding: 8px; border-top: 1px solid rgba(148,163,184,.12); }
+
+    .main { display: flex; flex-direction: column; min-width: 0; }
+    .topbar { display: flex; align-items: center; gap: 16px; padding: 16px 28px; background: #fff; border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 20; }
+    .topbar .group-pick { display: flex; align-items: center; gap: 9px; margin-left: auto; }
+    .topbar .group-pick label { margin: 0; font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+    .topbar .group-pick select { width: auto; min-width: 200px; padding: 8px 11px; font-weight: 600; }
+    .user-chip { display: flex; align-items: center; gap: 10px; padding-left: 16px; border-left: 1px solid var(--line); }
+    .avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, var(--brand), #2dd4bf); color: #04201d; display: grid; place-items: center; font-weight: 800; font-size: 14px; }
+    .user-chip .meta { line-height: 1.2; }
+    .user-chip .meta b { font-size: 13px; display: block; }
+    .user-chip .meta span { font-size: 11px; color: var(--muted); cursor: pointer; }
+    .user-chip .meta span:hover { color: var(--danger); }
+
+    .content { padding: 28px; max-width: 980px; width: 100%; margin: 0 auto; }
+    .page-head { margin-bottom: 22px; }
+    .page-head h1 { font-size: 24px; letter-spacing: -.02em; margin: 0 0 4px; }
+    .page-head p { margin: 0; color: var(--muted); font-size: 14px; }
+
+    .card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow-sm); padding: 22px; margin-bottom: 18px; }
+    .card h3 { margin: 0 0 4px; font-size: 16px; letter-spacing: -.01em; }
     .card .sub { margin: 0 0 16px; color: var(--muted); font-size: 13px; }
 
-    label { display: block; font-size: 13px; font-weight: 600; color: #334155; margin: 12px 0 5px; }
-    input, select {
-      width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px;
-      font-size: 14px; background: #f8fafc; color: var(--ink); outline: none; transition: border .15s, background .15s;
-    }
-    input:focus, select:focus { border-color: var(--brand); background: #fff; }
-    .row { display: flex; gap: 10px; }
-    .row > * { flex: 1; }
-    .checkbox { display: flex; align-items: center; gap: 8px; margin-top: 14px; }
-    .checkbox input { width: auto; }
-    .checkbox label { margin: 0; }
+    /* stat cards */
+    .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 20px; }
+    .stat { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: 18px 20px; box-shadow: var(--shadow-sm); }
+    .stat .lbl { font-size: 13px; color: var(--muted); font-weight: 600; display: flex; align-items: center; gap: 8px; }
+    .stat .lbl .dot { width: 9px; height: 9px; border-radius: 50%; }
+    .stat .val { font-size: 28px; font-weight: 800; letter-spacing: -.03em; margin-top: 8px; }
+    .stat.owe .val { color: var(--danger); }
+    .stat.paid .val { color: var(--ok); }
+    .stat.net .val { color: var(--brand-700); }
 
-    button.btn {
-      margin-top: 16px; width: 100%; padding: 11px 16px; border: none; border-radius: 10px;
-      background: var(--brand); color: #04201d; font-weight: 700; font-size: 14px; cursor: pointer;
-      transition: background .15s, transform .05s;
-    }
-    button.btn:hover { background: var(--brand-dark); color: #fff; }
-    button.btn:active { transform: translateY(1px); }
-    button.btn.secondary { background: #e2e8f0; color: #0f172a; }
-    button.btn.secondary:hover { background: #cbd5e1; }
-    button.ghost {
-      margin-top: 0; width: auto; padding: 8px 12px; background: #f1f5f9; color: #334155;
-      border: 1px solid var(--line); border-radius: 9px; font-weight: 600; font-size: 13px; cursor: pointer;
-    }
-    button.ghost:hover { border-color: var(--brand); }
+    /* group cards */
+    .group-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
+    .group-card { border: 1px solid var(--line); border-radius: 14px; padding: 16px; background: #fff; cursor: pointer; transition: all .14s; position: relative; }
+    .group-card:hover { border-color: var(--brand); box-shadow: var(--shadow); transform: translateY(-2px); }
+    .group-card.active { border-color: var(--brand); background: var(--brand-50); }
+    .group-card .gname { font-weight: 700; font-size: 15px; }
+    .group-card .gid { font-size: 12px; color: var(--muted); margin-top: 4px; font-family: ui-monospace, Menlo, monospace; }
+    .group-card .badge { position: absolute; top: 12px; right: 12px; font-size: 10px; font-weight: 700; color: var(--brand-700); background: #ccfbf1; padding: 3px 8px; border-radius: 999px; text-transform: uppercase; letter-spacing: .04em; }
 
-    .tabs { display: flex; gap: 8px; margin-bottom: 6px; }
-    .tabs button { flex: 1; padding: 9px; border: 1px solid var(--line); background: #f8fafc; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 14px; color: var(--muted); }
-    .tabs button.active { background: var(--brand); border-color: var(--brand); color: #04201d; }
-
-    .split-row { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
+    .split-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
     .split-row input { margin: 0; }
-    .split-row .rm { flex: 0 0 auto; width: 38px; height: 38px; border-radius: 9px; border: 1px solid var(--line); background: #fff; color: var(--danger); cursor: pointer; font-size: 18px; line-height: 1; }
+    .split-row .rm { flex: 0 0 auto; width: 40px; height: 42px; border-radius: 10px; border: 1px solid var(--line); background: #fff; color: var(--danger); cursor: pointer; font-size: 18px; }
+    .split-row .rm:hover { border-color: var(--danger); background: #fef2f2; }
 
-    .result { margin-top: 16px; border-radius: 10px; padding: 12px 14px; font-size: 13px; display: none; white-space: pre-wrap; word-break: break-word; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
-    .result.show { display: block; }
-    .result.ok { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; }
-    .result.err { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; }
+    .empty { text-align: center; padding: 28px; color: var(--muted); font-size: 14px; }
 
-    .hidden { display: none !important; }
-    .pill { display: inline-block; background: #ccfbf1; color: #0f766e; font-size: 12px; font-weight: 600; padding: 3px 9px; border-radius: 999px; margin-left: 8px; }
-    .hint { font-size: 12px; color: var(--muted); margin-top: 6px; }
-    .settle-list { list-style: none; padding: 0; margin: 12px 0 0; }
-    .settle-list li { display: flex; align-items: center; gap: 8px; padding: 10px 12px; background: #f8fafc; border: 1px solid var(--line); border-radius: 10px; margin-bottom: 8px; font-size: 14px; }
-    .settle-list .amt { margin-left: auto; font-weight: 700; color: var(--brand-dark); }
-    .arrow { color: var(--muted); }
-    footer { text-align: center; color: #64748b; font-size: 12px; padding: 10px; }
-    a { color: #5eead4; }
+    /* settle plan */
+    .settle-list { list-style: none; padding: 0; margin: 16px 0 0; display: grid; gap: 10px; }
+    .settle-list li { display: flex; align-items: center; gap: 12px; padding: 14px 16px; background: #fff; border: 1px solid var(--line); border-radius: 12px; font-size: 14px; }
+    .settle-list .who { font-weight: 600; }
+    .settle-list .arrow { color: var(--brand); font-weight: 700; }
+    .settle-list .amt { margin-left: auto; font-weight: 800; color: var(--brand-700); font-size: 16px; }
+    .all-settled { display: flex; align-items: center; gap: 12px; padding: 18px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; color: #166534; font-weight: 600; }
+
+    .row-flex { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .pill-info { font-size: 12px; color: var(--muted); background: #f1f5f9; padding: 5px 10px; border-radius: 8px; font-family: ui-monospace, Menlo, monospace; }
+
+    /* toast */
+    .toast-wrap { position: fixed; right: 20px; bottom: 20px; z-index: 100; display: flex; flex-direction: column; gap: 10px; }
+    .toast { min-width: 240px; max-width: 360px; padding: 13px 16px; border-radius: 12px; color: #fff; font-size: 14px; font-weight: 500;
+      box-shadow: var(--shadow-lg); display: flex; align-items: center; gap: 10px; animation: slideIn .25s ease; }
+    .toast.ok { background: #0f766e; }
+    .toast.err { background: #b91c1c; }
+    .toast.info { background: #334155; }
+    @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    @media (max-width: 880px) {
+      .auth-screen { grid-template-columns: 1fr; }
+      .auth-hero { display: none; }
+      .app-shell { grid-template-columns: 1fr; }
+      .sidebar { position: static; height: auto; flex-direction: row; overflow-x: auto; align-items: center; padding: 10px; }
+      .sidebar .logo { padding: 4px 10px; }
+      .sidebar .spacer, .sidebar .side-foot { display: none; }
+      .nav-item { width: auto; white-space: nowrap; }
+      .nav-item span.lbl { display: none; }
+      .stats { grid-template-columns: 1fr; }
+      .grid2 { grid-template-columns: 1fr; }
+      .topbar { flex-wrap: wrap; padding: 12px 16px; }
+      .topbar .group-pick { margin-left: 0; }
+      .content { padding: 18px; }
+    }
   </style>
 </head>
 <body>
-  <header class="topbar">
-    <div class="brand"><span class="dot">S</span> Splitit</div>
-    <div class="who hidden" id="whoami">
-      <span id="userEmail"></span>
-      <button id="logoutBtn">Log out</button>
-    </div>
-  </header>
-
-  <main>
-    <!-- ================= LOGGED OUT ================= -->
-    <section id="authView">
-      <div class="hero">
-        <h1>Split expenses, settle up easily</h1>
-        <p>Create groups, add shared bills, and instantly see who owes whom.</p>
+  <!-- ================= AUTH SCREEN ================= -->
+  <div class="auth-screen" id="authScreen">
+    <div class="auth-hero">
+      <span class="orb a"></span><span class="orb b"></span>
+      <div class="logo"><span class="brand-mark">S</span> Splitit</div>
+      <div>
+        <h1>Split expenses, settle up easily.</h1>
+        <p>Create groups, log shared bills, and instantly see the simplest way for everyone to settle their debts.</p>
+        <div class="feat">
+          <div><span class="ic">&#128101;</span> Organise spending into shared groups</div>
+          <div><span class="ic">&#129534;</span> Split any bill across members</div>
+          <div><span class="ic">&#9889;</span> One-tap, minimised settle-up plan</div>
+        </div>
       </div>
-      <div class="card">
+      <div style="color:#5eead4;font-size:13px;">A small expense-sharing demo</div>
+    </div>
+
+    <div class="auth-panel">
+      <div class="auth-card">
+        <div class="head">
+          <h2 id="authTitle">Welcome back</h2>
+          <p id="authSubtitle">Log in to manage your shared expenses.</p>
+        </div>
         <div class="tabs">
           <button id="tabLogin" class="active" onclick="showTab('login')">Log in</button>
           <button id="tabSignup" onclick="showTab('signup')">Sign up</button>
         </div>
 
-        <!-- Login -->
         <div id="loginForm">
-          <label>Email</label>
-          <input id="li_email" type="email" placeholder="you@example.com" autocomplete="username" />
-          <label>Password</label>
-          <input id="li_password" type="password" placeholder="••••••••" autocomplete="current-password" />
+          <div class="field"><label>Email</label><input id="li_email" type="email" placeholder="you@example.com" autocomplete="username" /></div>
+          <div class="field"><label>Password</label><input id="li_password" type="password" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')login()" /></div>
           <button class="btn" onclick="login()">Log in</button>
         </div>
 
-        <!-- Sign up -->
         <div id="signupForm" class="hidden">
-          <div class="row">
-            <div>
-              <label>First name</label>
-              <input id="su_first" type="text" placeholder="Abhi" />
-            </div>
-            <div>
-              <label>Last name <span style="color:var(--muted);font-weight:400">(optional)</span></label>
-              <input id="su_last" type="text" placeholder="Kohli" />
-            </div>
+          <div class="grid2">
+            <div class="field"><label>First name</label><input id="su_first" type="text" placeholder="Abhi" /></div>
+            <div class="field"><label>Last name</label><input id="su_last" type="text" placeholder="(optional)" /></div>
           </div>
-          <label>Email</label>
-          <input id="su_email" type="email" placeholder="you@example.com" />
-          <label>Password</label>
-          <input id="su_password" type="password" placeholder="Choose a strong password" />
+          <div class="field"><label>Email</label><input id="su_email" type="email" placeholder="you@example.com" /></div>
+          <div class="field"><label>Password</label><input id="su_password" type="password" placeholder="Choose a strong password" /></div>
           <button class="btn" onclick="signup()">Create account</button>
         </div>
-        <div id="authResult" class="result"></div>
       </div>
-    </section>
+    </div>
+  </div>
 
-    <!-- ================= LOGGED IN ================= -->
-    <section id="appView" class="hidden">
-      <!-- Create group -->
-      <div class="card">
-        <h2>Create a group</h2>
-        <p class="sub">A group holds members and their shared bills (e.g. "Goa Trip").</p>
-        <label>Group name</label>
-        <input id="g_name" type="text" placeholder="Goa Trip" />
-        <label>Description <span style="color:var(--muted);font-weight:400">(optional)</span></label>
-        <input id="g_desc" type="text" placeholder="Weekend getaway" />
-        <div class="checkbox">
-          <input id="g_simplify" type="checkbox" />
-          <label for="g_simplify">Simplify debts (minimise number of transactions)</label>
+  <!-- ================= APP SHELL ================= -->
+  <div class="app-shell hidden" id="appShell">
+    <aside class="sidebar">
+      <div class="logo"><span class="brand-mark">S</span> Splitit</div>
+      <button class="nav-item active" data-view="overview" onclick="navigate('overview')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        <span class="lbl">Overview</span>
+      </button>
+      <button class="nav-item" data-view="groups" onclick="navigate('groups')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <span class="lbl">Groups</span>
+      </button>
+      <button class="nav-item" data-view="members" onclick="navigate('members')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+        <span class="lbl">Members</span>
+      </button>
+      <button class="nav-item" data-view="expense" onclick="navigate('expense')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+        <span class="lbl">Add expense</span>
+      </button>
+      <button class="nav-item" data-view="settle" onclick="navigate('settle')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        <span class="lbl">Settle up</span>
+      </button>
+      <div class="spacer"></div>
+      <div class="side-foot">Splitit · expense-sharing demo</div>
+    </aside>
+
+    <div class="main">
+      <header class="topbar">
+        <div class="group-pick">
+          <label>Active group</label>
+          <select id="groupSelect" onchange="onGroupChange()"></select>
         </div>
-        <button class="btn" onclick="createGroup()">Create group</button>
-        <div id="groupResult" class="result"></div>
-      </div>
-
-      <!-- Active group selector -->
-      <div class="card">
-        <h2>Active group <span class="pill" id="activeGroupPill">none</span></h2>
-        <p class="sub">All actions below apply to the group selected here. Groups you create are remembered in this browser.</p>
-        <label>Select group</label>
-        <select id="groupSelect" onchange="onGroupChange()"></select>
-        <p class="hint">Don't see a group? Create one above, or paste an ID below.</p>
-        <label>…or paste a group ID</label>
-        <div class="row">
-          <input id="g_manual" type="text" placeholder="paste group UUID" />
-          <button class="ghost" style="margin-top:0;flex:0 0 auto" onclick="addManualGroup()">Use</button>
-        </div>
-      </div>
-
-      <!-- Add member -->
-      <div class="card">
-        <h2>Add a member</h2>
-        <p class="sub">Add an existing Splitit user (by their email) to the active group. Only the group creator can do this.</p>
-        <label>Member email</label>
-        <input id="m_email" type="email" placeholder="friend@example.com" />
-        <button class="btn" onclick="addMember()">Add to group</button>
-        <div id="memberResult" class="result"></div>
-      </div>
-
-      <!-- Add bill -->
-      <div class="card">
-        <h2>Add a bill</h2>
-        <p class="sub">Record a shared expense and how it splits between members.</p>
-        <label>Bill name</label>
-        <input id="b_name" type="text" placeholder="Dinner" />
-        <div class="row">
-          <div>
-            <label>Who paid (email)</label>
-            <input id="b_payer" type="email" placeholder="payer@example.com" />
-          </div>
-          <div>
-            <label>Total amount</label>
-            <input id="b_total" type="number" min="0" step="0.01" placeholder="1200" oninput="splitEqually(false)" />
+        <div class="user-chip">
+          <div class="avatar" id="avatar">?</div>
+          <div class="meta">
+            <b id="userEmail"></b>
+            <span id="logoutBtn">Log out</span>
           </div>
         </div>
-        <div class="row">
-          <div>
-            <label>Splitting type</label>
-            <select id="b_type">
-              <option value="E">Equally</option>
-              <option value="FA">Fixed amount</option>
-              <option value="P">Percentage</option>
-            </select>
+      </header>
+
+      <div class="content">
+        <!-- OVERVIEW -->
+        <section id="view-overview" class="view">
+          <div class="page-head">
+            <h1 id="greeting">Overview</h1>
+            <p>Your balances across all groups.</p>
           </div>
-          <div>
-            <label>Currency</label>
-            <input id="b_currency" type="text" value="INR" />
+          <div class="stats">
+            <div class="stat owe"><div class="lbl"><span class="dot" style="background:var(--danger)"></span>You owe</div><div class="val" id="stat_owe">—</div></div>
+            <div class="stat paid"><div class="lbl"><span class="dot" style="background:var(--ok)"></span>You paid</div><div class="val" id="stat_paid">—</div></div>
+            <div class="stat net"><div class="lbl"><span class="dot" style="background:var(--brand)"></span>Net balance</div><div class="val" id="stat_net">—</div></div>
           </div>
-        </div>
+          <div class="card">
+            <div class="row-flex">
+              <div>
+                <h3>Quick start</h3>
+                <p class="sub" style="margin:0">New here? Create a group, add members, then log a bill.</p>
+              </div>
+              <button class="btn sm" onclick="navigate('groups')">Create a group</button>
+            </div>
+          </div>
+        </section>
 
-        <label style="display:flex;align-items:center;justify-content:space-between">
-          Who owes a share?
-          <button class="ghost" type="button" onclick="splitEqually(true)">Split equally</button>
-        </label>
-        <div id="splitRows"></div>
-        <button class="ghost" type="button" style="margin-top:10px" onclick="addSplitRow()">+ Add person</button>
+        <!-- GROUPS -->
+        <section id="view-groups" class="view hidden">
+          <div class="page-head"><h1>Groups</h1><p>A group holds members and their shared bills.</p></div>
+          <div class="card">
+            <h3>Create a group</h3>
+            <p class="sub">e.g. "Goa Trip", "Flatmates", "Office lunch".</p>
+            <div class="field"><label>Group name</label><input id="g_name" type="text" placeholder="Goa Trip" /></div>
+            <div class="field"><label>Description (optional)</label><input id="g_desc" type="text" placeholder="Weekend getaway" /></div>
+            <div class="field checkbox"><input id="g_simplify" type="checkbox" /><label for="g_simplify">Simplify debts (minimise number of transfers)</label></div>
+            <button class="btn" onclick="createGroup()">Create group</button>
+          </div>
+          <div class="card">
+            <div class="row-flex" style="margin-bottom:14px"><h3 style="margin:0">Your groups</h3>
+              <button class="btn ghost sm" onclick="promptManualGroup()">+ Add by ID</button>
+            </div>
+            <div id="groupList" class="group-list"></div>
+            <div id="groupEmpty" class="empty">No groups yet — create your first one above.</div>
+          </div>
+        </section>
 
-        <button class="btn" onclick="createBill()">Save bill</button>
-        <div id="billResult" class="result"></div>
+        <!-- MEMBERS -->
+        <section id="view-members" class="view hidden">
+          <div class="page-head"><h1>Members</h1><p>Add existing Splitit users to the active group.</p></div>
+          <div class="card">
+            <div class="field"><label>Active group</label><div class="pill-info" id="members_group">none selected</div></div>
+            <div class="field"><label>Member email</label><input id="m_email" type="email" placeholder="friend@example.com" /></div>
+            <p class="sub">The person must already have a Splitit account. Only the group's creator can add members.</p>
+            <button class="btn" onclick="addMember()">Add to group</button>
+          </div>
+        </section>
+
+        <!-- ADD EXPENSE -->
+        <section id="view-expense" class="view hidden">
+          <div class="page-head"><h1>Add expense</h1><p>Record a shared bill and how it splits.</p></div>
+          <div class="card">
+            <div class="field"><label>Active group</label><div class="pill-info" id="expense_group">none selected</div></div>
+            <div class="field"><label>Bill name</label><input id="b_name" type="text" placeholder="Dinner" /></div>
+            <div class="grid2">
+              <div class="field"><label>Who paid (email)</label><input id="b_payer" type="email" placeholder="payer@example.com" /></div>
+              <div class="field"><label>Total amount</label><input id="b_total" type="number" min="0" step="0.01" placeholder="1200" oninput="splitEqually(false)" /></div>
+            </div>
+            <div class="grid2">
+              <div class="field"><label>Splitting type</label>
+                <select id="b_type"><option value="E">Equally</option><option value="FA">Fixed amount</option><option value="P">Percentage</option></select>
+              </div>
+              <div class="field"><label>Currency</label><input id="b_currency" type="text" value="INR" /></div>
+            </div>
+            <div class="row-flex" style="margin-bottom:8px">
+              <label style="margin:0">Who owes a share?</label>
+              <button class="btn ghost sm" type="button" onclick="splitEqually(true)">Split equally</button>
+            </div>
+            <div id="splitRows"></div>
+            <button class="btn ghost sm" type="button" style="margin-top:6px" onclick="addSplitRow()">+ Add person</button>
+            <button class="btn" style="margin-top:16px" onclick="createBill()">Save bill</button>
+          </div>
+        </section>
+
+        <!-- SETTLE -->
+        <section id="view-settle" class="view hidden">
+          <div class="page-head"><h1>Settle up</h1><p>See balances and the simplest settle-up plan for the active group.</p></div>
+          <div class="card">
+            <div class="field"><label>Active group</label><div class="pill-info" id="settle_group">none selected</div></div>
+            <div class="stats" style="margin-bottom:16px">
+              <div class="stat owe"><div class="lbl">Owed in group</div><div class="val" id="gstat_owe">—</div></div>
+              <div class="stat paid"><div class="lbl">Paid in group</div><div class="val" id="gstat_paid">—</div></div>
+              <div class="stat net"><div class="lbl">Net</div><div class="val" id="gstat_net">—</div></div>
+            </div>
+            <button class="btn" onclick="settle()">Show settle-up plan</button>
+            <ul class="settle-list hidden" id="settleList"></ul>
+            <div id="settleMsg"></div>
+          </div>
+        </section>
       </div>
+    </div>
+  </div>
 
-      <!-- Balances -->
-      <div class="card">
-        <h2>Balances &amp; settle up</h2>
-        <p class="sub">See what's owed and the simplest way to settle.</p>
-        <div class="row">
-          <button class="btn secondary" onclick="getTotalDebt()">My total balance</button>
-          <button class="btn secondary" onclick="getGroupDebt()">My balance in group</button>
-        </div>
-        <button class="btn" onclick="settle()">Show settle-up plan for group</button>
-        <ul class="settle-list hidden" id="settleList"></ul>
-        <div id="balanceResult" class="result"></div>
-      </div>
-    </section>
-  </main>
-
-  <footer>Splitit · expense-sharing API demo</footer>
+  <div class="toast-wrap" id="toastWrap"></div>
 
   <script>
     // ---------------------------------------------------------------------
-    // Tiny client for the Splitit REST API. Served same-origin, so all calls
-    // use relative paths and there are no CORS concerns. Auth uses JWT bearer
-    // tokens (SimpleJWT) stored in localStorage.
+    // Splitit frontend — a no-build single-page client for the REST API.
+    // Served same-origin, so all calls are relative (no CORS). Auth uses JWT
+    // bearer tokens (SimpleJWT) kept in localStorage; a 401 triggers one
+    // transparent refresh-and-retry.
     // ---------------------------------------------------------------------
     const API = "/api";
     const store = {
@@ -272,9 +399,7 @@
         localStorage.setItem("splitit_refresh", refresh);
         if (email) localStorage.setItem("splitit_email", email);
       },
-      clear() {
-        ["splitit_access", "splitit_refresh", "splitit_email"].forEach(k => localStorage.removeItem(k));
-      },
+      clear() { ["splitit_access","splitit_refresh","splitit_email"].forEach(k => localStorage.removeItem(k)); },
       get groups() { try { return JSON.parse(localStorage.getItem("splitit_groups") || "[]"); } catch { return []; } },
       saveGroup(g) {
         const groups = store.groups.filter(x => x.id !== g.id);
@@ -283,193 +408,175 @@
       },
     };
 
-    // Core fetch helper. Adds bearer token, parses JSON, and transparently
-    // refreshes the access token once on a 401.
     async function api(path, { method = "GET", body, auth = true, _retry = false } = {}) {
       const headers = { "Content-Type": "application/json" };
       if (auth && store.access) headers["Authorization"] = "Bearer " + store.access;
-      const res = await fetch(API + path, {
-        method,
-        headers,
-        body: body ? JSON.stringify(body) : undefined,
-      });
-
+      const res = await fetch(API + path, { method, headers, body: body ? JSON.stringify(body) : undefined });
       if (res.status === 401 && auth && !_retry && store.refresh) {
-        const refreshed = await tryRefresh();
-        if (refreshed) return api(path, { method, body, auth, _retry: true });
+        if (await tryRefresh()) return api(path, { method, body, auth, _retry: true });
       }
-
-      let data = null;
-      try { data = await res.json(); } catch { /* empty body */ }
+      let data = null; try { data = await res.json(); } catch {}
       return { ok: res.ok, status: res.status, data };
     }
-
     async function tryRefresh() {
-      const res = await fetch(API + "/token/refresh/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ refresh: store.refresh }),
-      });
+      const res = await fetch(API + "/token/refresh/", { method: "POST",
+        headers: { "Content-Type": "application/json" }, body: JSON.stringify({ refresh: store.refresh }) });
       if (!res.ok) return false;
       const data = await res.json();
       store.set(data.access, store.refresh, store.email);
       return true;
     }
 
-    // ----- UI helpers -----
-    function show(el, msg, ok = true) {
-      const node = document.getElementById(el);
-      node.textContent = typeof msg === "string" ? msg : JSON.stringify(msg, null, 2);
-      node.className = "result show " + (ok ? "ok" : "err");
+    // ----- toast -----
+    function toast(msg, type = "info") {
+      const el = document.createElement("div");
+      el.className = "toast " + type;
+      el.textContent = msg;
+      document.getElementById("toastWrap").appendChild(el);
+      setTimeout(() => { el.style.opacity = "0"; el.style.transition = "opacity .3s"; setTimeout(() => el.remove(), 300); }, 3200);
     }
+
+    // ----- auth UI -----
     function showTab(which) {
       const login = which === "login";
       document.getElementById("tabLogin").classList.toggle("active", login);
       document.getElementById("tabSignup").classList.toggle("active", !login);
       document.getElementById("loginForm").classList.toggle("hidden", !login);
       document.getElementById("signupForm").classList.toggle("hidden", login);
+      document.getElementById("authTitle").textContent = login ? "Welcome back" : "Create your account";
+      document.getElementById("authSubtitle").textContent = login ? "Log in to manage your shared expenses." : "Start splitting expenses in seconds.";
     }
 
     function renderAuthState() {
-      const loggedIn = !!store.access;
-      document.getElementById("authView").classList.toggle("hidden", loggedIn);
-      document.getElementById("appView").classList.toggle("hidden", !loggedIn);
-      document.getElementById("whoami").classList.toggle("hidden", !loggedIn);
-      if (loggedIn) {
-        document.getElementById("userEmail").textContent = store.email || "";
+      const inApp = !!store.access;
+      document.getElementById("authScreen").classList.toggle("hidden", inApp);
+      document.getElementById("appShell").classList.toggle("hidden", !inApp);
+      if (inApp) {
+        const email = store.email || "";
+        document.getElementById("userEmail").textContent = email;
+        document.getElementById("avatar").textContent = (email[0] || "?").toUpperCase();
+        document.getElementById("greeting").textContent = "Hi " + (email.split("@")[0] || "there") + " 👋";
         renderGroups();
         if (document.querySelectorAll("#splitRows .split-row").length === 0) addSplitRow();
+        navigate("overview");
       }
     }
 
-    // ----- Auth actions -----
     async function signup() {
       const body = {
-        first_name: document.getElementById("su_first").value.trim(),
-        last_name: document.getElementById("su_last").value.trim(),
-        email: document.getElementById("su_email").value.trim(),
-        password: document.getElementById("su_password").value,
+        first_name: val("su_first"), last_name: val("su_last"),
+        email: val("su_email"), password: document.getElementById("su_password").value,
       };
-      if (!body.first_name || !body.email || !body.password) {
-        return show("authResult", "First name, email and password are required.", false);
-      }
+      if (!body.first_name || !body.email || !body.password) return toast("First name, email and password are required.", "err");
       const r = await api("/sign-up/", { method: "POST", body, auth: false });
       if (r.ok && r.data?.message === "SUCCESS") {
-        show("authResult", "Account created! Logging you in…", true);
+        toast("Account created! Logging you in…", "ok");
         document.getElementById("li_email").value = body.email;
         document.getElementById("li_password").value = body.password;
-        await login();
-      } else {
-        show("authResult", r.data?.message || ("Sign up failed (HTTP " + r.status + ")"), false);
-      }
+        login();
+      } else toast(r.data?.message || ("Sign up failed (HTTP " + r.status + ")"), "err");
     }
-
     async function login() {
-      const username = document.getElementById("li_email").value.trim();
-      const password = document.getElementById("li_password").value;
-      if (!username || !password) return show("authResult", "Enter email and password.", false);
+      const username = val("li_email"); const password = document.getElementById("li_password").value;
+      if (!username || !password) return toast("Enter email and password.", "err");
       const r = await api("/token/", { method: "POST", body: { username, password }, auth: false });
-      if (r.ok && r.data?.access) {
-        store.set(r.data.access, r.data.refresh, username);
-        renderAuthState();
-      } else {
-        show("authResult", r.data?.detail || "Invalid email or password.", false);
-      }
+      if (r.ok && r.data?.access) { store.set(r.data.access, r.data.refresh, username); renderAuthState(); toast("Welcome back!", "ok"); }
+      else toast(r.data?.detail || "Invalid email or password.", "err");
+    }
+    function logout() { store.clear(); location.reload(); }
+
+    // ----- navigation -----
+    function navigate(view) {
+      document.querySelectorAll(".view").forEach(v => v.classList.add("hidden"));
+      document.getElementById("view-" + view).classList.remove("hidden");
+      document.querySelectorAll(".nav-item").forEach(n => n.classList.toggle("active", n.dataset.view === view));
+      syncGroupLabels();
+      if (view === "overview") loadOverview();
+      if (view === "groups") renderGroups();
     }
 
-    function logout() { store.clear(); renderAuthState(); }
-
-    // ----- Groups -----
+    // ----- groups -----
     function renderGroups() {
-      const sel = document.getElementById("groupSelect");
       const groups = store.groups;
-      const active = localStorage.getItem("splitit_active_group");
+      const active = activeGroupId();
+      // top-bar select
+      const sel = document.getElementById("groupSelect");
       sel.innerHTML = "";
-      if (groups.length === 0) {
-        sel.innerHTML = '<option value="">— no groups yet —</option>';
-      } else {
+      if (!groups.length) { sel.innerHTML = '<option value="">— none —</option>'; }
+      else groups.forEach(g => {
+        const o = document.createElement("option");
+        o.value = g.id; o.textContent = g.name; if (g.id === active) o.selected = true;
+        sel.appendChild(o);
+      });
+      if (groups.length && (!active || !groups.find(g => g.id === active)))
+        localStorage.setItem("splitit_active_group", groups[0].id);
+      // grid on Groups page
+      const list = document.getElementById("groupList");
+      const empty = document.getElementById("groupEmpty");
+      if (list) {
+        list.innerHTML = "";
+        empty.classList.toggle("hidden", groups.length > 0);
         groups.forEach(g => {
-          const o = document.createElement("option");
-          o.value = g.id; o.textContent = g.name + " (" + g.id.slice(0, 8) + "…)";
-          if (g.id === active) o.selected = true;
-          sel.appendChild(o);
+          const card = document.createElement("div");
+          card.className = "group-card" + (g.id === activeGroupId() ? " active" : "");
+          card.innerHTML = (g.id === activeGroupId() ? '<span class="badge">Active</span>' : '') +
+            '<div class="gname">' + escapeHtml(g.name) + '</div><div class="gid">' + g.id.slice(0, 13) + '…</div>';
+          card.onclick = () => { localStorage.setItem("splitit_active_group", g.id); renderGroups(); syncGroupLabels(); toast("Active group: " + g.name, "info"); };
+          list.appendChild(card);
         });
-        if (!active || !groups.find(g => g.id === active)) {
-          localStorage.setItem("splitit_active_group", groups[0].id);
-        }
       }
-      updateActivePill();
+      syncGroupLabels();
     }
-    function onGroupChange() {
-      localStorage.setItem("splitit_active_group", document.getElementById("groupSelect").value);
-      updateActivePill();
-    }
-    function updateActivePill() {
-      const id = localStorage.getItem("splitit_active_group");
-      const g = store.groups.find(x => x.id === id);
-      document.getElementById("activeGroupPill").textContent = g ? g.name : "none";
-    }
+    function onGroupChange() { localStorage.setItem("splitit_active_group", document.getElementById("groupSelect").value); renderGroups(); syncGroupLabels(); }
     function activeGroupId() { return localStorage.getItem("splitit_active_group") || ""; }
-    function addManualGroup() {
-      const id = document.getElementById("g_manual").value.trim();
-      if (!id) return;
-      store.saveGroup({ id, name: "Group " + id.slice(0, 6) });
-      localStorage.setItem("splitit_active_group", id);
-      document.getElementById("g_manual").value = "";
-      renderGroups();
+    function activeGroupName() { const g = store.groups.find(x => x.id === activeGroupId()); return g ? g.name : null; }
+    function syncGroupLabels() {
+      const label = activeGroupName() ? (activeGroupName() + "  ·  " + activeGroupId().slice(0, 10) + "…") : "none selected";
+      ["members_group", "expense_group", "settle_group"].forEach(id => { const el = document.getElementById(id); if (el) el.textContent = label; });
     }
-
+    function promptManualGroup() {
+      const id = prompt("Paste the group ID (UUID):");
+      if (id && id.trim()) { store.saveGroup({ id: id.trim(), name: "Group " + id.trim().slice(0, 6) }); localStorage.setItem("splitit_active_group", id.trim()); renderGroups(); toast("Group added.", "ok"); }
+    }
     async function createGroup() {
-      const body = {
-        name: document.getElementById("g_name").value.trim(),
-        description: document.getElementById("g_desc").value.trim(),
-        to_simplify: document.getElementById("g_simplify").checked,
-      };
-      if (!body.name) return show("groupResult", "Group name is required.", false);
+      const body = { name: val("g_name"), description: val("g_desc"), to_simplify: document.getElementById("g_simplify").checked };
+      if (!body.name) return toast("Group name is required.", "err");
       const r = await api("/create-group/", { method: "POST", body });
       if (r.ok && r.data?.id) {
         store.saveGroup({ id: r.data.id, name: body.name });
         localStorage.setItem("splitit_active_group", r.data.id);
         renderGroups();
-        show("groupResult", "Group created and set as active.\nID: " + r.data.id, true);
-        document.getElementById("g_name").value = "";
-        document.getElementById("g_desc").value = "";
-      } else {
-        show("groupResult", r.data?.message || ("Failed (HTTP " + r.status + ")"), false);
-      }
+        toast("Group “" + body.name + "” created.", "ok");
+        document.getElementById("g_name").value = ""; document.getElementById("g_desc").value = ""; document.getElementById("g_simplify").checked = false;
+      } else toast(r.data?.message || ("Failed (HTTP " + r.status + ")"), "err");
     }
 
+    // ----- members -----
     async function addMember() {
-      const group_id = activeGroupId();
-      const member_username = document.getElementById("m_email").value.trim();
-      if (!group_id) return show("memberResult", "Select an active group first.", false);
-      if (!member_username) return show("memberResult", "Enter the member's email.", false);
+      const group_id = activeGroupId(); const member_username = val("m_email");
+      if (!group_id) return toast("Select an active group first.", "err");
+      if (!member_username) return toast("Enter the member's email.", "err");
       const r = await api("/add-member-to-group/", { method: "POST", body: { group_id, member_username } });
-      const msg = r.data?.message;
-      show("memberResult", msg || ("HTTP " + r.status), r.ok && msg === "SUCCESS");
-      if (r.ok && msg === "SUCCESS") document.getElementById("m_email").value = "";
+      if (r.ok && r.data?.message === "SUCCESS") { toast("Member added.", "ok"); document.getElementById("m_email").value = ""; }
+      else toast(r.data?.message || ("Failed (HTTP " + r.status + ")"), "err");
     }
 
-    // ----- Bill split rows -----
+    // ----- bill -----
     function addSplitRow(username = "", amount = "") {
-      const wrap = document.getElementById("splitRows");
       const row = document.createElement("div");
       row.className = "split-row";
       row.innerHTML =
         '<input type="email" placeholder="member@example.com" value="' + username + '" />' +
-        '<input type="number" min="0" step="0.01" placeholder="amount" value="' + amount + '" style="max-width:130px" />' +
+        '<input type="number" min="0" step="0.01" placeholder="amount" value="' + amount + '" style="max-width:140px" />' +
         '<button type="button" class="rm" title="remove">&times;</button>';
       row.querySelector(".rm").onclick = () => row.remove();
-      wrap.appendChild(row);
+      document.getElementById("splitRows").appendChild(row);
     }
     function collectSplits() {
       return [...document.querySelectorAll("#splitRows .split-row")].map(r => {
-        const [u, a] = r.querySelectorAll("input");
-        return { username: u.value.trim(), amount: a.value };
+        const [u, a] = r.querySelectorAll("input"); return { username: u.value.trim(), amount: a.value };
       }).filter(x => x.username && x.amount !== "");
     }
-    // Divide the total evenly across the current rows (only overwrites amounts
-    // if force=true OR amounts are empty, so manual entries aren't clobbered).
     function splitEqually(force) {
       const rows = [...document.querySelectorAll("#splitRows .split-row")];
       const total = parseFloat(document.getElementById("b_total").value);
@@ -479,93 +586,73 @@
       const each = Math.round((total / rows.length) * 100) / 100;
       rows.forEach(r => { r.querySelectorAll("input")[1].value = each; });
     }
-
     async function createBill() {
       const group_id = activeGroupId();
-      if (!group_id) return show("billResult", "Select an active group first.", false);
+      if (!group_id) return toast("Select an active group first.", "err");
       const member_transactions = collectSplits();
       const body = {
-        name: document.getElementById("b_name").value.trim(),
-        group_id,
-        payer_username: document.getElementById("b_payer").value.trim(),
+        name: val("b_name"), group_id, payer_username: val("b_payer"),
         splitting_type: document.getElementById("b_type").value,
-        currency: document.getElementById("b_currency").value.trim() || "INR",
-        total_amount: document.getElementById("b_total").value,
-        member_transactions,
+        currency: val("b_currency") || "INR",
+        total_amount: document.getElementById("b_total").value, member_transactions,
       };
-      if (!body.name || !body.payer_username || !body.total_amount || member_transactions.length === 0) {
-        return show("billResult", "Bill name, payer, total amount and at least one person are required.", false);
-      }
+      if (!body.name || !body.payer_username || !body.total_amount || !member_transactions.length)
+        return toast("Name, payer, total and at least one person are required.", "err");
       const r = await api("/create-bill/", { method: "POST", body });
-      const msg = r.data?.message;
-      if (r.ok && msg === "SUCCESS") {
-        show("billResult", "Bill saved!" + (r.data.bill_id ? "\nID: " + r.data.bill_id : ""), true);
-        document.getElementById("b_name").value = "";
-        document.getElementById("b_total").value = "";
-        document.getElementById("splitRows").innerHTML = "";
-        addSplitRow();
-      } else {
-        show("billResult", msg || ("Failed (HTTP " + r.status + ")"), false);
-      }
+      if (r.ok && r.data?.message === "SUCCESS") {
+        toast("Bill saved!", "ok");
+        document.getElementById("b_name").value = ""; document.getElementById("b_total").value = "";
+        document.getElementById("splitRows").innerHTML = ""; addSplitRow();
+      } else toast(r.data?.message || ("Failed (HTTP " + r.status + ")"), "err");
     }
 
-    // ----- Balances -----
-    async function getTotalDebt() {
-      hideSettle();
+    // ----- balances / settle -----
+    async function loadOverview() {
       const r = await api("/get-total-debt/");
       if (r.ok) {
-        show("balanceResult",
-          "Across all groups:\n  Owed (your share of bills): " + r.data.total_amount_owed +
-          "\n  Paid (bills you covered): " + r.data.total_amount_paid, true);
-      } else show("balanceResult", r.data?.message || ("HTTP " + r.status), false);
+        const owe = num(r.data.total_amount_owed), paid = num(r.data.total_amount_paid);
+        document.getElementById("stat_owe").textContent = fmt(owe);
+        document.getElementById("stat_paid").textContent = fmt(paid);
+        document.getElementById("stat_net").textContent = fmt(paid - owe);
+      }
     }
-
-    async function getGroupDebt() {
-      hideSettle();
+    async function loadGroupBalance() {
       const group_id = activeGroupId();
-      if (!group_id) return show("balanceResult", "Select an active group first.", false);
+      if (!group_id) return;
       const r = await api("/get-group-debt/?group_id=" + encodeURIComponent(group_id));
       if (r.ok) {
-        show("balanceResult",
-          "In this group:\n  Owed: " + r.data.group_amount_owed +
-          "\n  Paid: " + r.data.group_amount_paid, true);
-      } else show("balanceResult", r.data?.message || ("HTTP " + r.status), false);
+        const owe = num(r.data.group_amount_owed), paid = num(r.data.group_amount_paid);
+        document.getElementById("gstat_owe").textContent = fmt(owe);
+        document.getElementById("gstat_paid").textContent = fmt(paid);
+        document.getElementById("gstat_net").textContent = fmt(paid - owe);
+      }
     }
-
-    function hideSettle() {
-      const list = document.getElementById("settleList");
-      list.classList.add("hidden"); list.innerHTML = "";
-    }
-
     async function settle() {
       const group_id = activeGroupId();
-      if (!group_id) return show("balanceResult", "Select an active group first.", false);
+      if (!group_id) return toast("Select an active group first.", "err");
+      loadGroupBalance();
       const r = await api("/settle-transaction/", { method: "POST", body: { group_id } });
-      if (!r.ok || r.data?.message !== "SUCCESS") {
-        hideSettle();
-        return show("balanceResult", r.data?.message || ("HTTP " + r.status), false);
-      }
-      // The API uses key "settlement" when simplified, "settelement" otherwise.
-      const plan = r.data.settlement || r.data.settelement || [];
       const list = document.getElementById("settleList");
-      list.innerHTML = "";
-      if (plan.length === 0) {
-        document.getElementById("balanceResult").className = "result show ok";
-        document.getElementById("balanceResult").textContent = "All settled up — nobody owes anything!";
-        list.classList.add("hidden");
-        return;
-      }
-      document.getElementById("balanceResult").className = "result";
+      const msg = document.getElementById("settleMsg");
+      list.innerHTML = ""; list.classList.add("hidden"); msg.innerHTML = "";
+      if (!r.ok || r.data?.message !== "SUCCESS") return toast(r.data?.message || ("Failed (HTTP " + r.status + ")"), "err");
+      const plan = r.data.settlement || r.data.settelement || [];
+      if (!plan.length) { msg.innerHTML = '<div class="all-settled">✓ All settled up — nobody owes anything!</div>'; return; }
       plan.forEach(t => {
         const li = document.createElement("li");
-        li.innerHTML = "<span>" + t.debtor + "</span><span class='arrow'>owes →</span><span>" +
-          t.payer + "</span><span class='amt'>" + (Math.round(parseFloat(t.amount) * 100) / 100) + "</span>";
+        li.innerHTML = '<span class="who">' + escapeHtml(t.debtor) + '</span><span class="arrow">→ owes →</span>' +
+          '<span class="who">' + escapeHtml(t.payer) + '</span><span class="amt">' + fmt(num(t.amount)) + '</span>';
         list.appendChild(li);
       });
       list.classList.remove("hidden");
     }
 
-    // ----- wire up + init -----
+    // ----- utils -----
+    function val(id) { return document.getElementById(id).value.trim(); }
+    function num(x) { const n = parseFloat(x); return isNaN(n) ? 0 : n; }
+    function fmt(n) { return (Math.round(n * 100) / 100).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 }); }
+    function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
+
     document.getElementById("logoutBtn").onclick = logout;
     renderAuthState();
   </script>
