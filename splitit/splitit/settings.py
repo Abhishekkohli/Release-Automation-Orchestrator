@@ -12,20 +12,41 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 
 import os
 
+import dj_database_url
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
+def _env_bool(name, default=False):
+    # Helper: read a boolean from an env var ("1"/"true"/"yes" => True)
+    return os.environ.get(name, str(default)).strip().lower() in ("1", "true", "yes", "on")
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '-e&rzk%2r@y$l=yv4$lroqvy(p#4_$p!-=2#lz3b5w9c_yy8l('
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# All sensitive / environment-specific config is read from env vars so the same
+# image can run locally (docker-compose) and on any host (Render/Railway/Fly...).
 
-ALLOWED_HOSTS = []
+# SECURITY WARNING: set SECRET_KEY in the environment for any public deployment.
+SECRET_KEY = os.environ.get(
+    "SECRET_KEY", "-e&rzk%2r@y$l=yv4$lroqvy(p#4_$p!-=2#lz3b5w9c_yy8l("
+)
+
+# SECURITY WARNING: never run with DEBUG enabled in production. Defaults to off.
+DEBUG = _env_bool("DEBUG", False)
+
+# Comma-separated list, e.g. "myapp.onrender.com,api.example.com"
+ALLOWED_HOSTS = [
+    h.strip()
+    for h in os.environ.get(
+        "ALLOWED_HOSTS", "localhost,127.0.0.1,0.0.0.0"
+    ).split(",")
+    if h.strip()
+]
+
+# Render injects the public hostname here; add it automatically.
+RENDER_EXTERNAL_HOSTNAME = os.environ.get("RENDER_EXTERNAL_HOSTNAME")
+if RENDER_EXTERNAL_HOSTNAME:
+    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
 
 
 # Application definition
@@ -44,14 +65,16 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    # WhiteNoise serves static files (incl. the admin) directly from the app,
+    # so no separate web server / S3 bucket is needed for a simple deploy.
+    'whitenoise.middleware.WhiteNoiseMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
 ]
 
 ROOT_URLCONF = 'splitit.urls'
@@ -78,15 +101,25 @@ WSGI_APPLICATION = 'splitit.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
 
+# Reads the DATABASE_URL env var (provided by Render/Railway/Heroku/etc.).
+# Falls back to the local docker-compose Postgres service when unset.
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'splitit_db',
-        'USER': 'postgres',
-        'PASSWORD': 'postgres',
-        'HOST': 'db',
-        'PORT': '5432',
-    }
+    'default': dj_database_url.config(
+        default=os.environ.get(
+            'DATABASE_URL',
+            'postgres://postgres:postgres@db:5432/splitit_db',
+        ),
+        conn_max_age=600,
+    )
+}
+
+# Make IsAuthenticated views work with the JWT tokens issued by the
+# /api/token/ endpoint (SimpleJWT). Session auth is kept for the browsable API.
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ),
 }
 
 
@@ -178,3 +211,6 @@ CORS_ORIGIN_ALLOW_ALL = True
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 
 STATIC_URL = '/static/'
+# collectstatic gathers files here; WhiteNoise serves them compressed + hashed.
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'

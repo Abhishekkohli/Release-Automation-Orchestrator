@@ -24,15 +24,67 @@ For this application the schema diagram is a very core element as designing the 
 
 ![splitit-schema](./images/splitit_schema_dia.png)
 
-### How to run
+### How to run (locally)
 
-* Clone the repository
+Requirements: Docker Desktop running.
 
-* Go to the directory and start the machines using `docker-compose up`.
+* Clone the repository.
 
-* Run the Postgres migrations needed  `cd splitit && docker-compose run web python manage.py migrate`.
+* From the project root, build and start everything:
 
-* Now the web application is accessible at `http://localhost:8000`
+```bash
+docker compose up --build
+```
+
+This starts Postgres, waits for it to be healthy, automatically runs migrations
+and `collectstatic`, then serves the app with Gunicorn.
+
+* The API is now available at `http://localhost:8000`. A few things to try:
+
+```bash
+# Sign up a user
+curl -X POST http://localhost:8000/api/sign-up/ \
+  -H "Content-Type: application/json" \
+  -d '{"first_name":"Abhi","email":"abhi@test.com","password":"Secret123!"}'
+
+# Get a JWT access token
+curl -X POST http://localhost:8000/api/token/ \
+  -H "Content-Type: application/json" \
+  -d '{"username":"abhi@test.com","password":"Secret123!"}'
+
+# Call an authenticated endpoint
+curl -X POST http://localhost:8000/api/create-group/ \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <access-token>" \
+  -d '{"name":"Trip","description":"Goa"}'
+```
+
+* To stop: `docker compose down` (add `-v` to also delete the database volume).
+
+### Deploying publicly
+
+The app is configured entirely through environment variables, so the same Docker
+image runs anywhere:
+
+| Variable        | Purpose                                              |
+| --------------- | ---------------------------------------------------- |
+| `SECRET_KEY`    | Django secret key (set a strong random value)        |
+| `DEBUG`         | `False` in production (default)                      |
+| `ALLOWED_HOSTS` | Comma-separated hostnames, e.g. `.onrender.com`      |
+| `DATABASE_URL`  | Postgres connection string (e.g. `postgres://...`)   |
+| `PORT`          | Port to bind (most hosts inject this automatically)  |
+
+**Render (easiest, includes free Postgres):**
+
+1. Push this repo to GitHub.
+2. Go to the [Render dashboard](https://dashboard.render.com) → **New → Blueprint**
+   and select the repo. Render reads `render.yaml`, provisions a Postgres database
+   and the web service, and wires up `DATABASE_URL` / `SECRET_KEY` for you.
+3. After the build finishes you get a public URL like
+   `https://splitit-api.onrender.com`.
+
+The same image also deploys cleanly on **Railway** or **Fly.io** — just provide a
+Postgres `DATABASE_URL` and set `ALLOWED_HOSTS` to your public hostname.
 
 ### Accomplishments ✔️:
 - Database models for storing user information, their bills, transactions and groups.
