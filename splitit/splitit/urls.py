@@ -15,8 +15,11 @@ Including another URLconf
 """
 from django.conf.urls import url, include
 from django.contrib import admin
+from django.views.generic import TemplateView
 
 urlpatterns = [
+    # Single-page frontend served from the same origin as the API.
+    url(r'^$', TemplateView.as_view(template_name='index.html'), name='home'),
     url('admin/', admin.site.urls),
     url('api/', include('api.urls'))
 ]

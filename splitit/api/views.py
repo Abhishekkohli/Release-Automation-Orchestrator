@@ -579,7 +579,9 @@ class GetGroupDebtAPI(APIView):
             }
             '''
 
-            group_id = data.get('group_id')
+            # GET requests cannot carry a body from browsers/fetch, so accept
+            # group_id as a query param (?group_id=...) and fall back to body.
+            group_id = request.query_params.get('group_id') or data.get('group_id')
 
             if isNull(group_id):
                 response['message'] = "BAD REQUEST"

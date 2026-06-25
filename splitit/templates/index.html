@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Splitit — Share expenses, settle up</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --bg-soft: #1e293b;
+      --card: #ffffff;
+      --ink: #0f172a;
+      --muted: #64748b;
+      --line: #e2e8f0;
+      --brand: #14b8a6;
+      --brand-dark: #0d9488;
+      --danger: #ef4444;
+      --ok: #16a34a;
+      --radius: 14px;
+      --shadow: 0 10px 30px rgba(2, 8, 23, 0.10);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      color: var(--ink);
+      background: linear-gradient(160deg, #0f172a 0%, #134e4a 100%);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+    header.topbar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 22px; color: #e2e8f0;
+      max-width: 860px; margin: 0 auto;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 20px; letter-spacing: -0.02em; }
+    .brand .dot { width: 26px; height: 26px; border-radius: 8px; background: var(--brand); display: grid; place-items: center; color: #042f2e; font-weight: 800; }
+    .who { font-size: 14px; color: #99f6e4; display: flex; align-items: center; gap: 12px; }
+    .who button { background: transparent; border: 1px solid #334155; color: #cbd5e1; padding: 6px 12px; border-radius: 8px; cursor: pointer; font-size: 13px; }
+    .who button:hover { border-color: var(--brand); color: #fff; }
+
+    main { max-width: 860px; margin: 0 auto; padding: 8px 18px 60px; }
+    .hero { color: #e2e8f0; text-align: center; margin: 18px 0 26px; }
+    .hero h1 { font-size: 30px; margin: 0 0 6px; letter-spacing: -0.03em; }
+    .hero p { margin: 0; color: #94a3b8; font-size: 15px; }
+
+    .card {
+      background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow);
+      padding: 22px; margin-bottom: 18px;
+    }
+    .card h2 { margin: 0 0 4px; font-size: 17px; letter-spacing: -0.01em; }
+    .card .sub { margin: 0 0 16px; color: var(--muted); font-size: 13px; }
+
+    label { display: block; font-size: 13px; font-weight: 600; color: #334155; margin: 12px 0 5px; }
+    input, select {
+      width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px;
+      font-size: 14px; background: #f8fafc; color: var(--ink); outline: none; transition: border .15s, background .15s;
+    }
+    input:focus, select:focus { border-color: var(--brand); background: #fff; }
+    .row { display: flex; gap: 10px; }
+    .row > * { flex: 1; }
+    .checkbox { display: flex; align-items: center; gap: 8px; margin-top: 14px; }
+    .checkbox input { width: auto; }
+    .checkbox label { margin: 0; }
+
+    button.btn {
+      margin-top: 16px; width: 100%; padding: 11px 16px; border: none; border-radius: 10px;
+      background: var(--brand); color: #04201d; font-weight: 700; font-size: 14px; cursor: pointer;
+      transition: background .15s, transform .05s;
+    }
+    button.btn:hover { background: var(--brand-dark); color: #fff; }
+    button.btn:active { transform: translateY(1px); }
+    button.btn.secondary { background: #e2e8f0; color: #0f172a; }
+    button.btn.secondary:hover { background: #cbd5e1; }
+    button.ghost {
+      margin-top: 0; width: auto; padding: 8px 12px; background: #f1f5f9; color: #334155;
+      border: 1px solid var(--line); border-radius: 9px; font-weight: 600; font-size: 13px; cursor: pointer;
+    }
+    button.ghost:hover { border-color: var(--brand); }
+
+    .tabs { display: flex; gap: 8px; margin-bottom: 6px; }
+    .tabs button { flex: 1; padding: 9px; border: 1px solid var(--line); background: #f8fafc; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 14px; color: var(--muted); }
+    .tabs button.active { background: var(--brand); border-color: var(--brand); color: #04201d; }
+
+    .split-row { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
+    .split-row input { margin: 0; }
+    .split-row .rm { flex: 0 0 auto; width: 38px; height: 38px; border-radius: 9px; border: 1px solid var(--line); background: #fff; color: var(--danger); cursor: pointer; font-size: 18px; line-height: 1; }
+
+    .result { margin-top: 16px; border-radius: 10px; padding: 12px 14px; font-size: 13px; display: none; white-space: pre-wrap; word-break: break-word; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .result.show { display: block; }
+    .result.ok { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; }
+    .result.err { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; }
+
+    .hidden { display: none !important; }
+    .pill { display: inline-block; background: #ccfbf1; color: #0f766e; font-size: 12px; font-weight: 600; padding: 3px 9px; border-radius: 999px; margin-left: 8px; }
+    .hint { font-size: 12px; color: var(--muted); margin-top: 6px; }
+    .settle-list { list-style: none; padding: 0; margin: 12px 0 0; }
+    .settle-list li { display: flex; align-items: center; gap: 8px; padding: 10px 12px; background: #f8fafc; border: 1px solid var(--line); border-radius: 10px; margin-bottom: 8px; font-size: 14px; }
+    .settle-list .amt { margin-left: auto; font-weight: 700; color: var(--brand-dark); }
+    .arrow { color: var(--muted); }
+    footer { text-align: center; color: #64748b; font-size: 12px; padding: 10px; }
+    a { color: #5eead4; }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><span class="dot">S</span> Splitit</div>
+    <div class="who hidden" id="whoami">
+      <span id="userEmail"></span>
+      <button id="logoutBtn">Log out</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- ================= LOGGED OUT ================= -->
+    <section id="authView">
+      <div class="hero">
+        <h1>Split expenses, settle up easily</h1>
+        <p>Create groups, add shared bills, and instantly see who owes whom.</p>
+      </div>
+      <div class="card">
+        <div class="tabs">
+          <button id="tabLogin" class="active" onclick="showTab('login')">Log in</button>
+          <button id="tabSignup" onclick="showTab('signup')">Sign up</button>
+        </div>
+
+        <!-- Login -->
+        <div id="loginForm">
+          <label>Email</label>
+          <input id="li_email" type="email" placeholder="you@example.com" autocomplete="username" />
+          <label>Password</label>
+          <input id="li_password" type="password" placeholder="••••••••" autocomplete="current-password" />
+          <button class="btn" onclick="login()">Log in</button>
+        </div>
+
+        <!-- Sign up -->
+        <div id="signupForm" class="hidden">
+          <div class="row">
+            <div>
+              <label>First name</label>
+              <input id="su_first" type="text" placeholder="Abhi" />
+            </div>
+            <div>
+              <label>Last name <span style="color:var(--muted);font-weight:400">(optional)</span></label>
+              <input id="su_last" type="text" placeholder="Kohli" />
+            </div>
+          </div>
+          <label>Email</label>
+          <input id="su_email" type="email" placeholder="you@example.com" />
+          <label>Password</label>
+          <input id="su_password" type="password" placeholder="Choose a strong password" />
+          <button class="btn" onclick="signup()">Create account</button>
+        </div>
+        <div id="authResult" class="result"></div>
+      </div>
+    </section>
+
+    <!-- ================= LOGGED IN ================= -->
+    <section id="appView" class="hidden">
+      <!-- Create group -->
+      <div class="card">
+        <h2>Create a group</h2>
+        <p class="sub">A group holds members and their shared bills (e.g. "Goa Trip").</p>
+        <label>Group name</label>
+        <input id="g_name" type="text" placeholder="Goa Trip" />
+        <label>Description <span style="color:var(--muted);font-weight:400">(optional)</span></label>
+        <input id="g_desc" type="text" placeholder="Weekend getaway" />
+        <div class="checkbox">
+          <input id="g_simplify" type="checkbox" />
+          <label for="g_simplify">Simplify debts (minimise number of transactions)</label>
+        </div>
+        <button class="btn" onclick="createGroup()">Create group</button>
+        <div id="groupResult" class="result"></div>
+      </div>
+
+      <!-- Active group selector -->
+      <div class="card">
+        <h2>Active group <span class="pill" id="activeGroupPill">none</span></h2>
+        <p class="sub">All actions below apply to the group selected here. Groups you create are remembered in this browser.</p>
+        <label>Select group</label>
+        <select id="groupSelect" onchange="onGroupChange()"></select>
+        <p class="hint">Don't see a group? Create one above, or paste an ID below.</p>
+        <label>…or paste a group ID</label>
+        <div class="row">
+          <input id="g_manual" type="text" placeholder="paste group UUID" />
+          <button class="ghost" style="margin-top:0;flex:0 0 auto" onclick="addManualGroup()">Use</button>
+        </div>
+      </div>
+
+      <!-- Add member -->
+      <div class="card">
+        <h2>Add a member</h2>
+        <p class="sub">Add an existing Splitit user (by their email) to the active group. Only the group creator can do this.</p>
+        <label>Member email</label>
+        <input id="m_email" type="email" placeholder="friend@example.com" />
+        <button class="btn" onclick="addMember()">Add to group</button>
+        <div id="memberResult" class="result"></div>
+      </div>
+
+      <!-- Add bill -->
+      <div class="card">
+        <h2>Add a bill</h2>
+        <p class="sub">Record a shared expense and how it splits between members.</p>
+        <label>Bill name</label>
+        <input id="b_name" type="text" placeholder="Dinner" />
+        <div class="row">
+          <div>
+            <label>Who paid (email)</label>
+            <input id="b_payer" type="email" placeholder="payer@example.com" />
+          </div>
+          <div>
+            <label>Total amount</label>
+            <input id="b_total" type="number" min="0" step="0.01" placeholder="1200" oninput="splitEqually(false)" />
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <label>Splitting type</label>
+            <select id="b_type">
+              <option value="E">Equally</option>
+              <option value="FA">Fixed amount</option>
+              <option value="P">Percentage</option>
+            </select>
+          </div>
+          <div>
+            <label>Currency</label>
+            <input id="b_currency" type="text" value="INR" />
+          </div>
+        </div>
+
+        <label style="display:flex;align-items:center;justify-content:space-between">
+          Who owes a share?
+          <button class="ghost" type="button" onclick="splitEqually(true)">Split equally</button>
+        </label>
+        <div id="splitRows"></div>
+        <button class="ghost" type="button" style="margin-top:10px" onclick="addSplitRow()">+ Add person</button>
+
+        <button class="btn" onclick="createBill()">Save bill</button>
+        <div id="billResult" class="result"></div>
+      </div>
+
+      <!-- Balances -->
+      <div class="card">
+        <h2>Balances &amp; settle up</h2>
+        <p class="sub">See what's owed and the simplest way to settle.</p>
+        <div class="row">
+          <button class="btn secondary" onclick="getTotalDebt()">My total balance</button>
+          <button class="btn secondary" onclick="getGroupDebt()">My balance in group</button>
+        </div>
+        <button class="btn" onclick="settle()">Show settle-up plan for group</button>
+        <ul class="settle-list hidden" id="settleList"></ul>
+        <div id="balanceResult" class="result"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer>Splitit · expense-sharing API demo</footer>
+
+  <script>
+    // ---------------------------------------------------------------------
+    // Tiny client for the Splitit REST API. Served same-origin, so all calls
+    // use relative paths and there are no CORS concerns. Auth uses JWT bearer
+    // tokens (SimpleJWT) stored in localStorage.
+    // ---------------------------------------------------------------------
+    const API = "/api";
+    const store = {
+      get access() { return localStorage.getItem("splitit_access"); },
+      get refresh() { return localStorage.getItem("splitit_refresh"); },
+      get email() { return localStorage.getItem("splitit_email"); },
+      set(access, refresh, email) {
+        localStorage.setItem("splitit_access", access);
+        localStorage.setItem("splitit_refresh", refresh);
+        if (email) localStorage.setItem("splitit_email", email);
+      },
+      clear() {
+        ["splitit_access", "splitit_refresh", "splitit_email"].forEach(k => localStorage.removeItem(k));
+      },
+      get groups() { try { return JSON.parse(localStorage.getItem("splitit_groups") || "[]"); } catch { return []; } },
+      saveGroup(g) {
+        const groups = store.groups.filter(x => x.id !== g.id);
+        groups.push(g);
+        localStorage.setItem("splitit_groups", JSON.stringify(groups));
+      },
+    };
+
+    // Core fetch helper. Adds bearer token, parses JSON, and transparently
+    // refreshes the access token once on a 401.
+    async function api(path, { method = "GET", body, auth = true, _retry = false } = {}) {
+      const headers = { "Content-Type": "application/json" };
+      if (auth && store.access) headers["Authorization"] = "Bearer " + store.access;
+      const res = await fetch(API + path, {
+        method,
+        headers,
+        body: body ? JSON.stringify(body) : undefined,
+      });
+
+      if (res.status === 401 && auth && !_retry && store.refresh) {
+        const refreshed = await tryRefresh();
+        if (refreshed) return api(path, { method, body, auth, _retry: true });
+      }
+
+      let data = null;
+      try { data = await res.json(); } catch { /* empty body */ }
+      return { ok: res.ok, status: res.status, data };
+    }
+
+    async function tryRefresh() {
+      const res = await fetch(API + "/token/refresh/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ refresh: store.refresh }),
+      });
+      if (!res.ok) return false;
+      const data = await res.json();
+      store.set(data.access, store.refresh, store.email);
+      return true;
+    }
+
+    // ----- UI helpers -----
+    function show(el, msg, ok = true) {
+      const node = document.getElementById(el);
+      node.textContent = typeof msg === "string" ? msg : JSON.stringify(msg, null, 2);
+      node.className = "result show " + (ok ? "ok" : "err");
+    }
+    function showTab(which) {
+      const login = which === "login";
+      document.getElementById("tabLogin").classList.toggle("active", login);
+      document.getElementById("tabSignup").classList.toggle("active", !login);
+      document.getElementById("loginForm").classList.toggle("hidden", !login);
+      document.getElementById("signupForm").classList.toggle("hidden", login);
+    }
+
+    function renderAuthState() {
+      const loggedIn = !!store.access;
+      document.getElementById("authView").classList.toggle("hidden", loggedIn);
+      document.getElementById("appView").classList.toggle("hidden", !loggedIn);
+      document.getElementById("whoami").classList.toggle("hidden", !loggedIn);
+      if (loggedIn) {
+        document.getElementById("userEmail").textContent = store.email || "";
+        renderGroups();
+        if (document.querySelectorAll("#splitRows .split-row").length === 0) addSplitRow();
+      }
+    }
+
+    // ----- Auth actions -----
+    async function signup() {
+      const body = {
+        first_name: document.getElementById("su_first").value.trim(),
+        last_name: document.getElementById("su_last").value.trim(),
+        email: document.getElementById("su_email").value.trim(),
+        password: document.getElementById("su_password").value,
+      };
+      if (!body.first_name || !body.email || !body.password) {
+        return show("authResult", "First name, email and password are required.", false);
+      }
+      const r = await api("/sign-up/", { method: "POST", body, auth: false });
+      if (r.ok && r.data?.message === "SUCCESS") {
+        show("authResult", "Account created! Logging you in…", true);
+        document.getElementById("li_email").value = body.email;
+        document.getElementById("li_password").value = body.password;
+        await login();
+      } else {
+        show("authResult", r.data?.message || ("Sign up failed (HTTP " + r.status + ")"), false);
+      }
+    }
+
+    async function login() {
+      const username = document.getElementById("li_email").value.trim();
+      const password = document.getElementById("li_password").value;
+      if (!username || !password) return show("authResult", "Enter email and password.", false);
+      const r = await api("/token/", { method: "POST", body: { username, password }, auth: false });
+      if (r.ok && r.data?.access) {
+        store.set(r.data.access, r.data.refresh, username);
+        renderAuthState();
+      } else {
+        show("authResult", r.data?.detail || "Invalid email or password.", false);
+      }
+    }
+
+    function logout() { store.clear(); renderAuthState(); }
+
+    // ----- Groups -----
+    function renderGroups() {
+      const sel = document.getElementById("groupSelect");
+      const groups = store.groups;
+      const active = localStorage.getItem("splitit_active_group");
+      sel.innerHTML = "";
+      if (groups.length === 0) {
+        sel.innerHTML = '<option value="">— no groups yet —</option>';
+      } else {
+        groups.forEach(g => {
+          const o = document.createElement("option");
+          o.value = g.id; o.textContent = g.name + " (" + g.id.slice(0, 8) + "…)";
+          if (g.id === active) o.selected = true;
+          sel.appendChild(o);
+        });
+        if (!active || !groups.find(g => g.id === active)) {
+          localStorage.setItem("splitit_active_group", groups[0].id);
+        }
+      }
+      updateActivePill();
+    }
+    function onGroupChange() {
+      localStorage.setItem("splitit_active_group", document.getElementById("groupSelect").value);
+      updateActivePill();
+    }
+    function updateActivePill() {
+      const id = localStorage.getItem("splitit_active_group");
+      const g = store.groups.find(x => x.id === id);
+      document.getElementById("activeGroupPill").textContent = g ? g.name : "none";
+    }
+    function activeGroupId() { return localStorage.getItem("splitit_active_group") || ""; }
+    function addManualGroup() {
+      const id = document.getElementById("g_manual").value.trim();
+      if (!id) return;
+      store.saveGroup({ id, name: "Group " + id.slice(0, 6) });
+      localStorage.setItem("splitit_active_group", id);
+      document.getElementById("g_manual").value = "";
+      renderGroups();
+    }
+
+    async function createGroup() {
+      const body = {
+        name: document.getElementById("g_name").value.trim(),
+        description: document.getElementById("g_desc").value.trim(),
+        to_simplify: document.getElementById("g_simplify").checked,
+      };
+      if (!body.name) return show("groupResult", "Group name is required.", false);
+      const r = await api("/create-group/", { method: "POST", body });
+      if (r.ok && r.data?.id) {
+        store.saveGroup({ id: r.data.id, name: body.name });
+        localStorage.setItem("splitit_active_group", r.data.id);
+        renderGroups();
+        show("groupResult", "Group created and set as active.\nID: " + r.data.id, true);
+        document.getElementById("g_name").value = "";
+        document.getElementById("g_desc").value = "";
+      } else {
+        show("groupResult", r.data?.message || ("Failed (HTTP " + r.status + ")"), false);
+      }
+    }
+
+    async function addMember() {
+      const group_id = activeGroupId();
+      const member_username = document.getElementById("m_email").value.trim();
+      if (!group_id) return show("memberResult", "Select an active group first.", false);
+      if (!member_username) return show("memberResult", "Enter the member's email.", false);
+      const r = await api("/add-member-to-group/", { method: "POST", body: { group_id, member_username } });
+      const msg = r.data?.message;
+      show("memberResult", msg || ("HTTP " + r.status), r.ok && msg === "SUCCESS");
+      if (r.ok && msg === "SUCCESS") document.getElementById("m_email").value = "";
+    }
+
+    // ----- Bill split rows -----
+    function addSplitRow(username = "", amount = "") {
+      const wrap = document.getElementById("splitRows");
+      const row = document.createElement("div");
+      row.className = "split-row";
+      row.innerHTML =
+        '<input type="email" placeholder="member@example.com" value="' + username + '" />' +
+        '<input type="number" min="0" step="0.01" placeholder="amount" value="' + amount + '" style="max-width:130px" />' +
+        '<button type="button" class="rm" title="remove">&times;</button>';
+      row.querySelector(".rm").onclick = () => row.remove();
+      wrap.appendChild(row);
+    }
+    function collectSplits() {
+      return [...document.querySelectorAll("#splitRows .split-row")].map(r => {
+        const [u, a] = r.querySelectorAll("input");
+        return { username: u.value.trim(), amount: a.value };
+      }).filter(x => x.username && x.amount !== "");
+    }
+    // Divide the total evenly across the current rows (only overwrites amounts
+    // if force=true OR amounts are empty, so manual entries aren't clobbered).
+    function splitEqually(force) {
+      const rows = [...document.querySelectorAll("#splitRows .split-row")];
+      const total = parseFloat(document.getElementById("b_total").value);
+      if (!rows.length || !total) return;
+      const anyFilled = rows.some(r => r.querySelectorAll("input")[1].value !== "");
+      if (!force && anyFilled) return;
+      const each = Math.round((total / rows.length) * 100) / 100;
+      rows.forEach(r => { r.querySelectorAll("input")[1].value = each; });
+    }
+
+    async function createBill() {
+      const group_id = activeGroupId();
+      if (!group_id) return show("billResult", "Select an active group first.", false);
+      const member_transactions = collectSplits();
+      const body = {
+        name: document.getElementById("b_name").value.trim(),
+        group_id,
+        payer_username: document.getElementById("b_payer").value.trim(),
+        splitting_type: document.getElementById("b_type").value,
+        currency: document.getElementById("b_currency").value.trim() || "INR",
+        total_amount: document.getElementById("b_total").value,
+        member_transactions,
+      };
+      if (!body.name || !body.payer_username || !body.total_amount || member_transactions.length === 0) {
+        return show("billResult", "Bill name, payer, total amount and at least one person are required.", false);
+      }
+      const r = await api("/create-bill/", { method: "POST", body });
+      const msg = r.data?.message;
+      if (r.ok && msg === "SUCCESS") {
+        show("billResult", "Bill saved!" + (r.data.bill_id ? "\nID: " + r.data.bill_id : ""), true);
+        document.getElementById("b_name").value = "";
+        document.getElementById("b_total").value = "";
+        document.getElementById("splitRows").innerHTML = "";
+        addSplitRow();
+      } else {
+        show("billResult", msg || ("Failed (HTTP " + r.status + ")"), false);
+      }
+    }
+
+    // ----- Balances -----
+    async function getTotalDebt() {
+      hideSettle();
+      const r = await api("/get-total-debt/");
+      if (r.ok) {
+        show("balanceResult",
+          "Across all groups:\n  Owed (your share of bills): " + r.data.total_amount_owed +
+          "\n  Paid (bills you covered): " + r.data.total_amount_paid, true);
+      } else show("balanceResult", r.data?.message || ("HTTP " + r.status), false);
+    }
+
+    async function getGroupDebt() {
+      hideSettle();
+      const group_id = activeGroupId();
+      if (!group_id) return show("balanceResult", "Select an active group first.", false);
+      const r = await api("/get-group-debt/?group_id=" + encodeURIComponent(group_id));
+      if (r.ok) {
+        show("balanceResult",
+          "In this group:\n  Owed: " + r.data.group_amount_owed +
+          "\n  Paid: " + r.data.group_amount_paid, true);
+      } else show("balanceResult", r.data?.message || ("HTTP " + r.status), false);
+    }
+
+    function hideSettle() {
+      const list = document.getElementById("settleList");
+      list.classList.add("hidden"); list.innerHTML = "";
+    }
+
+    async function settle() {
+      const group_id = activeGroupId();
+      if (!group_id) return show("balanceResult", "Select an active group first.", false);
+      const r = await api("/settle-transaction/", { method: "POST", body: { group_id } });
+      if (!r.ok || r.data?.message !== "SUCCESS") {
+        hideSettle();
+        return show("balanceResult", r.data?.message || ("HTTP " + r.status), false);
+      }
+      // The API uses key "settlement" when simplified, "settelement" otherwise.
+      const plan = r.data.settlement || r.data.settelement || [];
+      const list = document.getElementById("settleList");
+      list.innerHTML = "";
+      if (plan.length === 0) {
+        document.getElementById("balanceResult").className = "result show ok";
+        document.getElementById("balanceResult").textContent = "All settled up — nobody owes anything!";
+        list.classList.add("hidden");
+        return;
+      }
+      document.getElementById("balanceResult").className = "result";
+      plan.forEach(t => {
+        const li = document.createElement("li");
+        li.innerHTML = "<span>" + t.debtor + "</span><span class='arrow'>owes →</span><span>" +
+          t.payer + "</span><span class='amt'>" + (Math.round(parseFloat(t.amount) * 100) / 100) + "</span>";
+        list.appendChild(li);
+      });
+      list.classList.remove("hidden");
+    }
+
+    // ----- wire up + init -----
+    document.getElementById("logoutBtn").onclick = logout;
+    renderAuthState();
+  </script>
+</body>
+</html>
